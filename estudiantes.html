@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Estudiantes</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.4/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+        }
+
+        .btn-blue {
+            background-color: #007bff;
+        }
+
+        .search-bar {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold text-center">Gestión de Estudiantes</h1>
+
+        <!-- Barra de búsqueda -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Buscar estudiante por nombre..." class="p-2 border rounded w-full">
+        </div>
+
+        <!-- Tabla de estudiantes -->
+        <table id="studentTable">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Clave</th>
+                    <th>Grado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Los estudiantes serán añadidos aquí dinámicamente -->
+            </tbody>
+        </table>
+
+        <!-- Formulario para agregar o editar estudiante -->
+        <form id="studentForm" class="mt-4">
+            <input type="hidden" id="studentId" value="">
+            <div class="mb-4">
+                <label for="name" class="block text-sm font-medium text-gray-700">Nombre:</label>
+                <input type="text" id="name" class="p-2 border rounded w-full" placeholder="Nombre del estudiante">
+            </div>
+            <div class="mb-4">
+                <label for="clave" class="block text-sm font-medium text-gray-700">Clave:</label>
+                <input type="text" id="clave" class="p-2 border rounded w-full" placeholder="Clave del estudiante">
+            </div>
+            <div class="mb-4">
+                <label for="grado" class="block text-sm font-medium text-gray-700">Grado:</label>
+                <input type="text" id="grado" class="p-2 border rounded w-full" placeholder="Grado del estudiante">
+            </div>
+            <button type="submit" class="btn">Guardar Estudiante</button>
+        </form>
+
+        <!-- Botón para regresar a la página de Módulos (INEBA.html) -->
+        <div class="mt-4">
+            <button class="btn btn-blue" onclick="window.location.href='INEBA.html'">Volver a Módulos</button>
+        </div>
+    </div>
+
+    <script>
+        let students = [];
+        let editIndex = -1;
+
+        // Función para mostrar los estudiantes en la tabla
+        function renderStudents() {
+            const tableBody = document.querySelector("#studentTable tbody");
+            tableBody.innerHTML = ''; // Limpiar tabla
+
+            students.forEach((student, index) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${student.name}</td>
+                    <td>${student.clave}</td>
+                    <td>${student.grado}</td>
+                    <td>
+                        <button class="btn text-white bg-blue-500" onclick="editStudent(${index})">Editar</button>
+                        <button class="btn text-white bg-red-500" onclick="deleteStudent(${index})">Eliminar</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Función para agregar un estudiante
+        function addStudent(student) {
+            students.push(student);
+            renderStudents();
+        }
+
+        // Función para editar un estudiante
+        function editStudent(index) {
+            const student = students[index];
+            document.getElementById("studentId").value = index;
+            document.getElementById("name").value = student.name;
+            document.getElementById("clave").value = student.clave;
+            document.getElementById("grado").value = student.grado;
+        }
+
+        // Función para actualizar un estudiante
+        function updateStudent(index, updatedStudent) {
+            students[index] = updatedStudent;
+            renderStudents();
+        }
+
+        // Función para eliminar un estudiante
+        function deleteStudent(index) {
+            students.splice(index, 1);
+            renderStudents();
+        }
+
+        // Función para buscar estudiantes
+        function searchStudents() {
+            const query = document.getElementById("searchInput").value.toLowerCase();
+            const rows = document.querySelectorAll("#studentTable tbody tr");
+
+            rows.forEach(row => {
+                const studentName = row.cells[0].textContent.toLowerCase();
+                if (studentName.includes(query)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+
+        // Manejo de evento de formulario para agregar o editar estudiantes
+        document.getElementById("studentForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const name = document.getElementById("name").value;
+            const clave = document.getElementById("clave").value;
+            const grado = document.getElementById("grado").value;
+            const id = document.getElementById("studentId").value;
+
+            if (!name || !clave || !grado) {
+                alert("Por favor complete todos los campos.");
+                return;
+            }
+
+            const student = { name, clave, grado };
+
+            if (id === "") {
+                // Si no hay id, es un nuevo estudiante
+                addStudent(student);
+            } else {
+                // Si hay id, estamos editando un estudiante
+                updateStudent(id, student);
+            }
+
+            // Limpiar formulario después de guardar
+            document.getElementById("studentForm").reset();
+            document.getElementById("studentId").value = "";
+        });
+
+        // Evento para buscar estudiantes
+        document.getElementById("searchInput").addEventListener("input", searchStudents);
+
+        // Inicialización de algunos estudiantes de ejemplo
+        addStudent({ name: "Juan Pérez", clave: "12", grado: "1ero B" });
+        addStudent({ name: "Ana García", clave: "24", grado: "2do D" });
+        addStudent({ name: "Carlos López", clave: "9", grado: "3ero F" });
+    </script>
+</body>
+
+</html>
